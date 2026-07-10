@@ -1,0 +1,25 @@
+kubernetes_version: "__KUBERNETES_VERSION__"
+resource_group_name: "rg-aks-__ENV__-__LOCATION__"
+aks_subnet_name: "snet-aks-nodes"
+
+node_pool:
+  vm_size: "__AKS_NODE_VM_SIZE__"
+  min_count: __AKS_NODE_MIN_COUNT__
+  max_count: __AKS_NODE_MAX_COUNT__
+
+network_profile:
+  network_plugin: "azure"
+  network_plugin_mode: "overlay"
+
+api_server_access_profile:
+  private_cluster: true
+  private_dns_zone: "__AKS_PRIVATE_DNS_ZONE__"
+
+aad_profile:
+  enable_azure_rbac: true
+  managed: true
+
+role_assignments:
+  cluster_admin:
+    role_definition_id_or_name: "Azure Kubernetes Service RBAC Cluster Admin"
+    principal_id: "__AKS_ADMIN_GROUP_OBJECT_ID__"

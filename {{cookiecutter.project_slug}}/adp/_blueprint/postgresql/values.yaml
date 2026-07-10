@@ -1,0 +1,15 @@
+postfix: "{{ cookiecutter.client_name }}"
+resource_group_name: "rg-managed-__ENV__-__LOCATION_SHORT__"
+
+administrator_login:    "psqladmin"
+administrator_password: "CHANGE_ME"
+
+sku_name:           "B_Standard_B1ms"
+postgresql_version: "16"
+storage_mb:         32768
+zone:               1
+
+databases:
+  app:
+    name:    "app"
+    charset: "UTF8"

@@ -1,0 +1,14 @@
+resource_group_name: "rg-aks-__ENV__-__LOCATION__"
+
+vnet:
+  address_space: ["__VNET_CIDR__"]
+  subnets:
+    - key: "aks-nodes"
+      name: "snet-aks-nodes"
+      cidrs: ["__AKS_SUBNET_CIDR__"]
+
+user_managed_identities:
+  kubelet:
+    name: "uami-aks-kubelet"
+  controlplane:
+    name: "uami-aks-controlplane"
