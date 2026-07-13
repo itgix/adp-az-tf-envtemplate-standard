@@ -143,6 +143,12 @@ inputs = {
     enabled = true
   }
 
+  workload_auto_scaler_profile = {
+    vertical_pod_autoscaler = {
+      enabled = true
+    }
+  }
+
   tags = local.tags
 
   controlplane_principal_id = dependency.networking.outputs.umi_principal_ids["controlplane"]
