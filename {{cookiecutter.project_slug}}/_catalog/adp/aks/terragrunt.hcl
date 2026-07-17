@@ -20,8 +20,14 @@ generate "pre_aks_roles" {
   path      = "pre_aks_roles.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<-EOF
-variable "controlplane_principal_id" { type = string }
-variable "private_dns_zone_id"       { type = string; default = "" }
+variable "controlplane_principal_id" {
+  type = string
+}
+
+variable "private_dns_zone_id" {
+  type    = string
+  default = ""
+}
 
 resource "azurerm_role_assignment" "controlplane_private_dns" {
   count                = var.private_dns_zone_id != "" ? 1 : 0

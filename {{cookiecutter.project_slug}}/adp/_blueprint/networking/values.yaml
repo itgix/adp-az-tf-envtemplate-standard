@@ -9,6 +9,6 @@ vnet:
 
 user_managed_identities:
   kubelet:
-    name: "uami-aks-kubelet"
+    name: "__KUBELET_IDENTITY_NAME__"
   controlplane:
-    name: "uami-aks-controlplane"
+    name: "__CONTROLPLANE_IDENTITY_NAME__"

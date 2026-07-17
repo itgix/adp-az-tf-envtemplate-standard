@@ -12,12 +12,12 @@ network_profile:
   network_plugin_mode: "overlay"
 
 api_server_access_profile:
-  private_cluster: true
+  private_cluster: __AKS_PRIVATE_CLUSTER__
   private_dns_zone: "__AKS_PRIVATE_DNS_ZONE__"
 
 aad_profile:
-  enable_azure_rbac: true
-  managed: true
+  enable_azure_rbac: __AAD_ENABLE_AZURE_RBAC__
+  managed: __AAD_MANAGED__
 
 role_assignments:
   cluster_admin:
