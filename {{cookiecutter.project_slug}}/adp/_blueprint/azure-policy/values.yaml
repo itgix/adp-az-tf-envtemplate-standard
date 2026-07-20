@@ -1,0 +1,1 @@
+resource_group_name: "rg-aks-__ENV__-__LOCATION__"
