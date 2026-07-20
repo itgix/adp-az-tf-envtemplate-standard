@@ -160,3 +160,13 @@ inputs = {
   controlplane_principal_id = dependency.networking.outputs.umi_principal_ids["controlplane"]
   private_dns_zone_id       = try(local.cfg.api_server_access_profile.private_dns_zone, "")
 }
+
+generate "aks_outputs" {
+  path      = "aks_outputs.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<-EOF
+output "oidc_issuer_url" {
+  value = module.this.oidc_issuer_url
+}
+EOF
+}
