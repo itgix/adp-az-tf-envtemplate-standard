@@ -21,7 +21,8 @@ terraform {
 
 variable "subscription_id" {}
 variable "location" {}
-variable "oidc_issuer_url" {}
+variable "aks_cluster_name" {}
+variable "aks_resource_group_name" {}
 variable "tags" {
   type    = map(string)
   default = {}
@@ -41,6 +42,11 @@ variable "identities" {
   }))
 }
 
+data "azurerm_kubernetes_cluster" "aks" {
+  name                = var.aks_cluster_name
+  resource_group_name = var.aks_resource_group_name
+}
+
 module "identity" {
   source   = "git::https://github.com/Azure/terraform-azure-avm-ptn-alz-sub-vending//modules/user-assigned-managed-identity?ref=v0.1.1"
   for_each = var.identities
@@ -55,7 +61,7 @@ module "identity" {
     cred_key => {
       name               = cred.name
       subject_identifier = cred.subject_identifier
-      issuer_url         = coalesce(cred.issuer_url, var.oidc_issuer_url)
+      issuer_url         = coalesce(cred.issuer_url, data.azurerm_kubernetes_cluster.aks.oidc_issuer_url)
       audiences          = cred.audiences
     }
   }
@@ -91,15 +97,6 @@ exclude {
   exclude_dependencies = false
 }
 
-dependency "aks" {
-  config_path = "${get_original_terragrunt_dir()}/../aks"
-
-  mock_outputs = {
-    oidc_issuer_url = "https://oidc.prod-aks.azure.com/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000/"
-  }
-  mock_outputs_merge_with_state = true
-}
-
 locals {
   subscription_vars = read_terragrunt_config(find_in_parent_folders("subscription.hcl"))
   region_vars       = read_terragrunt_config(find_in_parent_folders("region.hcl"))
@@ -121,9 +118,10 @@ locals {
 }
 
 inputs = {
-  subscription_id = local.subscription_id
-  location        = local.location
-  oidc_issuer_url = dependency.aks.outputs.oidc_issuer_url
-  tags            = local.tags
-  identities      = local.cfg.identities
+  subscription_id         = local.subscription_id
+  location                = local.location
+  aks_cluster_name        = "aks-${local.environment}-${local.location}"
+  aks_resource_group_name = "rg-aks-${local.environment}-${local.location}"
+  tags                    = local.tags
+  identities              = local.cfg.identities
 }
