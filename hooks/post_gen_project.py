@@ -17,8 +17,9 @@ for env, locations in env_config.items():
             "create_networking":   True,
             "create_aks":          True,
             "create_identities":   True,
-            "create_azure_policy": False,
             "create_postgres":     False,
+            "create_azure_policy": True,
+            "vpa_enabled":         True,
         }
         context = {"ENV": env, "LOCATION": location, **defaults, **cfg}
 

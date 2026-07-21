@@ -8,8 +8,8 @@ node_pool:
   max_count: __AKS_NODE_MAX_COUNT__
 
 network_profile:
-  network_plugin: "azure"
-  network_plugin_mode: "overlay"
+  network_plugin: "__NETWORK_PLUGIN__"
+  network_plugin_mode: "__NETWORK_PLUGIN_MODE__"
 
 api_server_access_profile:
   private_cluster: __AKS_PRIVATE_CLUSTER__
@@ -18,6 +18,9 @@ api_server_access_profile:
 aad_profile:
   enable_azure_rbac: __AAD_ENABLE_AZURE_RBAC__
   managed: __AAD_MANAGED__
+
+addon_azure_policy: __CREATE_AZURE_POLICY__
+vpa_enabled: __VPA_ENABLED__
 
 role_assignments:
   cluster_admin:

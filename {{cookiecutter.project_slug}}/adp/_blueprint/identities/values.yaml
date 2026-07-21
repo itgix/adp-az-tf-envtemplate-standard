@@ -8,6 +8,9 @@ identities:
       external-dns:
         name: "dns-zone-__ENV__-__LOCATION__-external-dns"
         subject_identifier: "system:serviceaccount:external-dns:external-dns-sa"
+      cert-manager:
+        name: "dns-zone-__ENV__-__LOCATION__-cert-manager"
+        subject_identifier: "system:serviceaccount:cert-manager:cert-manager-sa"
 
   eso:
     name: "kv-eso-__ENV__-__LOCATION__"

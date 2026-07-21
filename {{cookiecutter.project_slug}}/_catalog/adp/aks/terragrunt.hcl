@@ -146,12 +146,12 @@ inputs = {
   }
 
   addon_profile_azure_policy = {
-    enabled = true
+    enabled = try(local.cfg.addon_azure_policy, true)
   }
 
   workload_auto_scaler_profile = {
     vertical_pod_autoscaler = {
-      enabled = true
+      enabled = try(local.cfg.vpa_enabled, true)
     }
   }
 

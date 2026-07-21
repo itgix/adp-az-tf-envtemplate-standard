@@ -1,7 +1,7 @@
 resource_group_name: "rg-aks-__ENV__-__LOCATION__"
 
 vnet:
-  address_space: ["__VNET_CIDR__"]
+  address_space: ["__ADDRESS_SPACE__"]
   subnets:
     - key: "aks-nodes"
       name: "snet-aks-nodes"
