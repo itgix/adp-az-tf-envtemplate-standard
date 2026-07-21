@@ -107,6 +107,8 @@ inputs = {
 
   node_resource_group = try(local.cfg.node_resource_group, null)
 
+  sku_tier = try(local.cfg.sku_tier, "Free")
+
   api_server_access_profile = {
     authorized_ip_ranges    = try(local.cfg.api_server_access_profile.ip_ranges, null)
     enable_private_cluster  = try(local.cfg.api_server_access_profile.private_cluster, false)

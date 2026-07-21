@@ -26,3 +26,5 @@ role_assignments:
   cluster_admin:
     role_definition_id_or_name: "Azure Kubernetes Service RBAC Cluster Admin"
     principal_id: "__AKS_ADMIN_GROUP_OBJECT_ID__"
+
+sku_tier: "__SKU_TIER__"
