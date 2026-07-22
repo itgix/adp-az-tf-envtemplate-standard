@@ -1,0 +1,81 @@
+{
+  "project_slug": "alz-contoso-adp-infra",
+  "client_name": "contoso",
+  "tenant_id": "35e55793-1d03-4bb1-99a3-4888c2cda0e0",
+  "subscription_id": "f7f8b016-64ca-4d42-afad-de91b2eae685",
+  "state_resource_group": "rg-managed-dev-swedencentral",
+  "state_storage_account": "stcontosodevsc",
+  "state_container": "tfstate",
+  "env_to_region_map": {
+    "dev": {
+      "swedencentral": {
+        "location_short": "sc",
+
+        "features": {
+          "create_lz_vending": true,
+          "create_aks": true,
+          "create_identities": true,
+          "create_postgres": false,
+          "create_azure_policy": false
+        },
+
+        "aks": {
+          "kubernetes_version": "1.35.5",
+          "aks_node_vm_size": "Standard_D2s_v3",
+          "aks_node_min_count": "2",
+          "aks_node_max_count": "5",
+          "aks_private_dns_zone": "/subscriptions/f7f8b016-64ca-4d42-afad-de91b2eae685/resourceGroups/rg-network-dev-swedencentral/providers/Microsoft.Network/privateDnsZones/contoso.privatelink.swedencentral.azmk8s.io",
+          "aks_admin_group_object_id": "00000000-0000-0000-0000-000000000000"
+        },
+
+        "networking": {
+          "vnet_cidr": "10.20.0.0/16",
+          "aks_subnet_cidr": "10.20.0.0/22",
+          "vnet_resource_id": "/subscriptions/f7f8b016-64ca-4d42-afad-de91b2eae685/resourceGroups/rg-network-dev-swedencentral/providers/Microsoft.Network/virtualNetworks/vnet-dev-swedencentral"
+        },
+
+        "scopes": {
+          "controlplane_dns_scope": "/resourceGroups/rg-network-dev-swedencentral/providers/Microsoft.Network/privateDnsZones/contoso.privatelink.swedencentral.azmk8s.io",
+          "dns_zone_scope": "/resourceGroups/rg-network-dev-swedencentral/providers/Microsoft.Network/privateDnsZones/contoso.internal",
+          "key_vault_scope": "/resourceGroups/rg-managed-dev-swedencentral/providers/Microsoft.KeyVault/vaults/kv-contoso-dev-sc",
+          "storage_account_scope": "/resourceGroups/rg-managed-dev-swedencentral/providers/Microsoft.Storage/storageAccounts/stcontosodevsc"
+        }
+      }
+    },
+    "prod": {
+      "swedencentral": {
+        "location_short": "sc",
+
+        "features": {
+          "create_lz_vending": true,
+          "create_aks": true,
+          "create_identities": true,
+          "create_postgres": false,
+          "create_azure_policy": false
+        },
+
+        "aks": {
+          "kubernetes_version": "1.35.5",
+          "aks_node_vm_size": "Standard_D4s_v3",
+          "aks_node_min_count": "3",
+          "aks_node_max_count": "10",
+          "aks_private_dns_zone": "",
+          "aks_admin_group_object_id": "00000000-0000-0000-0000-000000000000"
+        },
+
+        "networking": {
+          "vnet_cidr": "10.30.0.0/16",
+          "aks_subnet_cidr": "10.30.0.0/22",
+          "vnet_resource_id": "/subscriptions/<sub-id>/resourceGroups/rg-network-prod-swedencentral/providers/Microsoft.Network/virtualNetworks/vnet-prod-swedencentral"
+        },
+
+        "scopes": {
+          "controlplane_dns_scope": "/resourceGroups/rg-network-prod-swedencentral/providers/Microsoft.Network/privateDnsZones/contoso.privatelink.swedencentral.azmk8s.io",
+          "dns_zone_scope": "/resourceGroups/rg-network-prod-swedencentral/providers/Microsoft.Network/privateDnsZones/contoso.internal",
+          "key_vault_scope": "/resourceGroups/rg-managed-prod-swedencentral/providers/Microsoft.KeyVault/vaults/kv-contoso-prod-sc",
+          "storage_account_scope": "/resourceGroups/rg-managed-prod-swedencentral/providers/Microsoft.Storage/storageAccounts/stcontosoprodsc"
+        }
+      }
+    }
+  }
+}

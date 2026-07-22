@@ -3,5 +3,5 @@ include "root" {
 }
 
 include "catalog" {
-    path = "${get_repo_root()}/_catalog/adp/azure-policy/terragrunt.hcl"
+    path = "${get_repo_root()}/_catalog/azure-policy/terragrunt.hcl"
 }

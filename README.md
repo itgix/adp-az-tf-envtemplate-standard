@@ -2,7 +2,37 @@
 
 Cookiecutter template for generating ADP Azure Terragrunt infrastructure repositories.
 
+## Quick Start
+
+```bash
+# Create and activate a virtual environment
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # Linux/macOS
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
 ## Usage
+
+### generate.py (recommended)
+
+Generate a client repo using a config file:
+
+```bash
+python generate.py --config clients/contoso.json --output-dir ./output --overwrite
+```
+
+Or with just CLI flags (uses built-in defaults for everything else):
+
+```bash
+python generate.py --client-name contoso --tenant-id 00000000-... --subscription-id 00000000-...
+```
+
+See `client_config.example.json` for the full config format.
+
+### Direct cookiecutter
 
 ```bash
 cookiecutter https://github.com/itgix/adp-az-tf-envtemplate-standard
@@ -51,6 +81,6 @@ Each environment/region entry supports the following keys:
 
 ## What gets generated
 
-- Terragrunt catalog modules (`_catalog/adp/`) for AKS, networking, identities, and PostgreSQL
+- Terragrunt catalog modules (`_catalog/`) for AKS, lz-vending, identities, and PostgreSQL
 - Per-environment leaf folders (`adp/<env>/<region>/`) with pre-filled `values.yaml` files
 - `root.hcl` and `subscription.hcl` wired to the provided state backend and subscription

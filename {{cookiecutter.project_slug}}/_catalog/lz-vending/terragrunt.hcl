@@ -1,5 +1,14 @@
+# =============================================================================
+# Catalog: adp/lz-vending
+# Consolidated landing zone vending module that provisions:
+#   - Resource groups
+#   - Virtual networks + NSGs
+#   - User-assigned managed identities (AKS + workload identities)
+# Environment-specific values come from values.yaml in each leaf folder.
+# =============================================================================
+
 terraform {
-  source = "git::https://github.com/Azure/terraform-azure-avm-ptn-alz-sub-vending?ref=v0.1.1"
+  source = "git::https://github.com/Azure/terraform-azure-avm-ptn-alz-sub-vending?ref=v0.3.0"
 }
 
 exclude {
@@ -29,14 +38,45 @@ locals {
   tags           = merge(local.default_tags, local.inherited_tags, try(local.cfg.tags, {}))
 }
 
-generate "controlplane_kubelet_role" {
-  path      = "controlplane_kubelet_role.tf"
+generate "aks_subnet" {
+  path      = "aks_subnet.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<-EOF
-resource "azurerm_role_assignment" "controlplane_kubelet_operator" {
-  scope                = module.usermanagedidentity["kubelet"].resource_id
-  role_definition_name = "Managed Identity Operator"
-  principal_id         = module.usermanagedidentity["controlplane"].principal_id
+variable "create_subnet" {
+  type    = bool
+  default = false
+}
+
+variable "subnet_name" {
+  type    = string
+  default = ""
+}
+
+variable "subnet_address_prefixes" {
+  type    = list(string)
+  default = []
+}
+
+variable "subnet_vnet_resource_id" {
+  type    = string
+  default = ""
+}
+
+variable "aks_subnet_name" {
+  type    = string
+  default = ""
+}
+
+resource "azurerm_subnet" "aks" {
+  count                = var.create_subnet ? 1 : 0
+  name                 = var.subnet_name
+  resource_group_name  = split("/", var.subnet_vnet_resource_id)[4]
+  virtual_network_name = split("/", var.subnet_vnet_resource_id)[8]
+  address_prefixes     = var.subnet_address_prefixes
+}
+
+output "aks_subnet_id" {
+  value = var.create_subnet ? azurerm_subnet.aks[0].id : try("$${values(module.virtualnetwork)[0].resource_id}/subnets/$${var.aks_subnet_name}", "")
 }
 EOF
 }
@@ -47,20 +87,20 @@ inputs = {
 
   subscription_enabled                              = false
   subscription_management_group_association_enabled = false
-  umi_enabled             = true
-  user_managed_identities = {
-    for k, v in try(local.cfg.user_managed_identities, {}) :
-    k => {
-      name               = v.name
-      location           = local.location
-      resource_group_key = "aks"
-      tags               = merge(local.tags, try(v.tags, {}))
-    }
-  }
   budget_enabled                                    = false
-  role_assignment_enabled                           = false
+  role_assignment_enabled                           = true
   disable_telemetry                                 = !local.root_vars.locals.enable_telemetry
 
+  role_assignments = {
+    for k, v in try(local.cfg.role_assignments, {}) :
+    k => {
+      principal_id         = v.principal_id
+      role_definition_name = v.role_definition_name
+      scope                = v.scope
+    }
+  }
+
+  # --- Resource Groups ---
   resource_group_creation_enabled = true
   resource_groups = {
     aks = {
@@ -70,17 +110,18 @@ inputs = {
     }
   }
 
-  virtual_network_enabled = true
-  virtual_networks = {
+  # --- Virtual Network + Subnets ---
+  virtual_network_enabled = try(local.cfg.vnet_enabled, true)
+  virtual_networks = try(local.cfg.vnet_enabled, true) ? {
     vnet = {
       name               = try(local.cfg.vnet.name, "vnet-aks-${local.environment}-${local.location}")
-      address_space      = local.cfg.vnet.address_space
+      address_space      = try(local.cfg.vnet.address_space, [])
       location           = local.location
       resource_group_key = "aks"
       tags               = merge(local.tags, try(local.cfg.vnet.tags, {}))
 
       subnets = {
-        for s in local.cfg.vnet.subnets :
+        for s in try(local.cfg.vnet.subnets, []) :
         s.key => {
           name             = s.name
           address_prefixes = s.cidrs
@@ -91,11 +132,12 @@ inputs = {
         }
       }
     }
-  }
+  } : {}
 
-  network_security_group_enabled = true
-  network_security_groups = {
-    for s in local.cfg.vnet.subnets :
+  # --- Network Security Groups ---
+  network_security_group_enabled = try(local.cfg.vnet_enabled, true)
+  network_security_groups = try(local.cfg.vnet_enabled, true) ? {
+    for s in try(local.cfg.vnet.subnets, []) :
     "nsg-${s.key}" => {
       name               = "nsg-${s.name}-${local.environment}-${local.location}"
       resource_group_key = "aks"
@@ -155,6 +197,36 @@ inputs = {
         }
       )
     }
+  } : {}
+
+  # --- User-Assigned Managed Identities ---
+  umi_enabled = true
+  user_managed_identities = {
+    for k, v in try(local.cfg.user_managed_identities, {}) :
+    k => {
+      name               = "${k}-${local.environment}-${local.location}"
+      location           = local.location
+      resource_group_key = "aks"
+      tags               = merge(local.tags, try(v.tags, {}))
+      role_assignments   = try(v.role_assignments, {})
+      federated_credentials_advanced = {
+        for cred_key, cred in try(v.federated_credentials_advanced, {}) :
+        cred_key => {
+          name               = "${k}-${local.environment}-${local.location}-${cred_key}"
+          subject_identifier = cred.subject_identifier
+          issuer_url         = try(cred.issuer_url, local.cfg.oidc_issuer_url)
+          audiences          = try(cred.audiences, ["api://AzureADTokenExchange"])
+        }
+      }
+    }
   }
 
+  # --- Subnet creation (for existing VNet scenarios) ---
+  create_subnet           = try(local.cfg.subnet, null) != null
+  subnet_name             = try(local.cfg.subnet.name, "snet-aks-nodes-${local.environment}-${local.location}")
+  subnet_address_prefixes = try(local.cfg.subnet.address_prefixes, [])
+  subnet_vnet_resource_id = try(local.cfg.subnet.vnet_resource_id, "")
+
+  # --- Subnet name (for module-created VNet scenarios) ---
+  aks_subnet_name = try(local.cfg.aks_subnet_name, "snet-aks-nodes")
 }

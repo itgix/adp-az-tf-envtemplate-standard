@@ -3,6 +3,6 @@ include "root" {
 }
 
 include "module" {
-  path   = "${get_repo_root()}/_catalog/adp/postgresql/terragrunt.hcl"
+  path   = "${get_repo_root()}/_catalog/postgresql/terragrunt.hcl"
   expose = true
 }

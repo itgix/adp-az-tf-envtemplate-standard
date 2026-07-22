@@ -6,10 +6,9 @@ locals {
   }
 
   features = {
-    networking   = __CREATE_NETWORKING__
+    lz_vending   = __CREATE_LZ_VENDING__
     aks          = __CREATE_AKS__
     azure_policy = __CREATE_AZURE_POLICY__
-    identities   = __CREATE_IDENTITIES__
     postgresql   = __CREATE_POSTGRES__
   }
 }

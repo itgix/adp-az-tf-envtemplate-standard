@@ -7,7 +7,7 @@
 # =============================================================================
 
 terraform {
-  source = "git::https://github.com/Azure/terraform-azurerm-avm-res-containerservice-managedcluster?ref=v0.6.6"
+  source = "git::https://github.com/Azure/terraform-azurerm-avm-res-containerservice-managedcluster?ref=v0.6.7"
 }
 
 exclude {
@@ -16,45 +16,26 @@ exclude {
   exclude_dependencies = false
 }
 
-generate "pre_aks_roles" {
-  path      = "pre_aks_roles.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-variable "controlplane_principal_id" {
-  type = string
-}
-
-variable "private_dns_zone_id" {
-  type    = string
-  default = ""
-}
-
-resource "azurerm_role_assignment" "controlplane_private_dns" {
-  count                = var.private_dns_zone_id != "" ? 1 : 0
-  scope                = var.private_dns_zone_id
-  role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = var.controlplane_principal_id
-}
-EOF
-}
-
-dependency "networking" {
-  config_path = "${get_original_terragrunt_dir()}/../networking"
+dependency "lz_vending" {
+  config_path = "${get_original_terragrunt_dir()}/../lz-vending"
 
   mock_outputs = {
+    resource_group_resource_ids = {
+      aks = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aks-dev-swedencentral"
+    }
     virtual_network_resource_ids = {
       vnet = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aks-dev-swedencentral/providers/Microsoft.Network/virtualNetworks/vnet-aks-dev-swedencentral"
     }
     umi_resource_ids  = {
-      kubelet      = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aks-dev-swedencentral/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-aks-kubelet"
-      controlplane = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aks-dev-swedencentral/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-aks-controlplane"
+      kubelet      = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aks-dev-swedencentral/providers/Microsoft.ManagedIdentity/userAssignedIdentities/kubelet-dev-swedencentral"
+      controlplane = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aks-dev-swedencentral/providers/Microsoft.ManagedIdentity/userAssignedIdentities/controlplane-dev-swedencentral"
     }
     umi_client_ids    = { kubelet = "00000000-0000-0000-0000-000000000000", controlplane = "00000000-0000-0000-0000-000000000000" }
     umi_principal_ids = { kubelet = "00000000-0000-0000-0000-000000000000", controlplane = "00000000-0000-0000-0000-000000000000" }
+    aks_subnet_id     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-network-dev-swedencentral/providers/Microsoft.Network/virtualNetworks/vnet-dev-swedencentral/subnets/snet-aks-nodes"
   }
   mock_outputs_merge_with_state = true
 }
-
 
 locals {
   subscription_vars = read_terragrunt_config(find_in_parent_folders("subscription.hcl"))
@@ -79,11 +60,12 @@ locals {
 }
 
 inputs = {
-  name                = "aks-${local.environment}-${local.location}"
-  location            = local.location
-  resource_group_name = local.cfg.resource_group_name
-  parent_id           = "/subscriptions/${local.subscription_id}/resourceGroups/${local.cfg.resource_group_name}"
-  kubernetes_version  = local.cfg.kubernetes_version
+  name                   = "aks-${local.environment}-${local.location}"
+  location               = local.location
+  parent_id              = dependency.lz_vending.outputs.resource_group_resource_ids["aks"]
+  dns_prefix             = try(local.cfg.dns_prefix, "aks-${local.environment}-${local.location}")
+  kubernetes_version     = local.cfg.kubernetes_version
+  disk_encryption_set_id = try(local.cfg.disk_encryption_set_id, null)
 
   # Networking - Azure CNI Overlay
   network_profile = {
@@ -98,16 +80,14 @@ inputs = {
     min_count           = local.cfg.node_pool.min_count
     max_count           = local.cfg.node_pool.max_count
     enable_auto_scaling = true
-    vnet_subnet_id      = "${dependency.networking.outputs.virtual_network_resource_ids["vnet"]}/subnets/${local.cfg.aks_subnet_name}"
+    vnet_subnet_id      = dependency.lz_vending.outputs.aks_subnet_id
   }
 
   node_pools = try(local.cfg.node_pools, {})
-
+  
   role_assignments = try(local.cfg.role_assignments, {})
 
   node_resource_group = try(local.cfg.node_resource_group, null)
-
-  sku_tier = try(local.cfg.sku_tier, "Free")
 
   api_server_access_profile = {
     authorized_ip_ranges    = try(local.cfg.api_server_access_profile.ip_ranges, null)
@@ -126,21 +106,22 @@ inputs = {
 
   identity_profile = {
     kubeletidentity = {
-      resource_id = dependency.networking.outputs.umi_resource_ids["kubelet"]
-      client_id   = dependency.networking.outputs.umi_client_ids["kubelet"]
-      object_id   = dependency.networking.outputs.umi_principal_ids["kubelet"]
+      resource_id = dependency.lz_vending.outputs.umi_resource_ids["kubelet"]
+      client_id   = dependency.lz_vending.outputs.umi_client_ids["kubelet"]
+      object_id   = dependency.lz_vending.outputs.umi_principal_ids["kubelet"]
     }
   }
 
   managed_identities = {
     system_assigned            = false
-    user_assigned_resource_ids = [dependency.networking.outputs.umi_resource_ids["controlplane"]]
+    user_assigned_resource_ids = [dependency.lz_vending.outputs.umi_resource_ids["controlplane"]]
   }
 
   # Workload Identity + OIDC
   oidc_issuer_profile = {
     enabled = true
   }
+  
   security_profile = {
     workload_identity = {
       enabled = true
@@ -148,27 +129,19 @@ inputs = {
   }
 
   addon_profile_azure_policy = {
-    enabled = try(local.cfg.addon_azure_policy, true)
+    enabled = true
   }
 
   workload_auto_scaler_profile = {
     vertical_pod_autoscaler = {
-      enabled = try(local.cfg.vpa_enabled, true)
+      enabled = true
     }
   }
 
+  auto_upgrade_profile = {
+    node_os_upgrade_channel = try(local.cfg.auto_upgrade_profile.node_os_upgrade_channel, "NodeImage")
+    upgrade_channel         = try(local.cfg.auto_upgrade_profile.upgrade_channel, "none")
+  }
+
   tags = local.tags
-
-  controlplane_principal_id = dependency.networking.outputs.umi_principal_ids["controlplane"]
-  private_dns_zone_id       = try(local.cfg.api_server_access_profile.private_dns_zone, "")
-}
-
-generate "aks_outputs" {
-  path      = "aks_outputs.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-output "oidc_issuer_url" {
-  value = module.this.oidc_issuer_url
-}
-EOF
 }

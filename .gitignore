@@ -1,0 +1,32 @@
+# Generated output
+/output/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Client config files (may contain sensitive values)
+# Uncomment the line below if you want to keep client configs out of version control:
+# /clients/

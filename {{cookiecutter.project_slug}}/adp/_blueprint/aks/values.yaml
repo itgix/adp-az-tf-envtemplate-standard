@@ -1,6 +1,4 @@
 kubernetes_version: "__KUBERNETES_VERSION__"
-resource_group_name: "rg-aks-__ENV__-__LOCATION__"
-aks_subnet_name: "snet-aks-nodes"
 
 node_pool:
   vm_size: "__AKS_NODE_VM_SIZE__"
@@ -8,23 +6,29 @@ node_pool:
   max_count: __AKS_NODE_MAX_COUNT__
 
 network_profile:
-  network_plugin: "__NETWORK_PLUGIN__"
-  network_plugin_mode: "__NETWORK_PLUGIN_MODE__"
+  network_plugin: "azure"
+  network_plugin_mode: "overlay"
 
 api_server_access_profile:
-  private_cluster: __AKS_PRIVATE_CLUSTER__
+  private_cluster: true
   private_dns_zone: "__AKS_PRIVATE_DNS_ZONE__"
+  # enable_vnet_integration: false
+  # subnet_id: ""
+  # ip_ranges: []
 
 aad_profile:
-  enable_azure_rbac: __AAD_ENABLE_AZURE_RBAC__
-  managed: __AAD_MANAGED__
+  admin_group_object_ids: ["__AKS_ADMIN_GROUP_OBJECT_ID__"]
+  enable_azure_rbac: true
+  managed: true
 
-addon_azure_policy: __CREATE_AZURE_POLICY__
-vpa_enabled: __VPA_ENABLED__
+# role_assignments:
+#   cluster_admin:
+#     role_definition_id_or_name: "Azure Kubernetes Service RBAC Cluster Admin"
+#     principal_id: "__AKS_ADMIN_GROUP_OBJECT_ID__"
 
-role_assignments:
-  cluster_admin:
-    role_definition_id_or_name: "Azure Kubernetes Service RBAC Cluster Admin"
-    principal_id: "__AKS_ADMIN_GROUP_OBJECT_ID__"
+# auto_upgrade_profile:
+#   node_os_upgrade_channel: "NodeImage"
+#   upgrade_channel: "none"
 
-sku_tier: "__SKU_TIER__"
+# node_pools: {}
+# tags: {}

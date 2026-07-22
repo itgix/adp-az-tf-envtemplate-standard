@@ -1,5 +1,5 @@
 terraform {
-  source = "${get_repo_root()}/_catalog/adp/azure-policy//"
+  source = "${get_repo_root()}/_catalog/azure-policy//"
 }
 
 generate "policy_assignment" {
