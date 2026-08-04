@@ -1,32 +1,36 @@
-# Generated output
-/output/
+# Local .terraform directories
+**/.terraform/*
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-.eggs/
-*.egg
+# .tfstate files (commented for testing purposes)
+*.tfstate
+*.tfstate.*
 
-# Virtual environments
-.venv/
-venv/
-ENV/
+# Crash log files
+crash.log
+crash.*.log
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 
-# OS
-.DS_Store
-Thumbs.db
+# Include override files you do wish to add to version control using negated pattern
+#
+# !example_override.tf
 
-# Client config files (may contain sensitive values)
-# Uncomment the line below if you want to keep client configs out of version control:
-# /clients/
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+# example: *tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+.terraform-version
+
+# Ignore provider lock
+.terraform.lock.hcl
+
+# Ignore local infracost files
+**/.infracost/
+**/.infracost/*
