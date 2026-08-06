@@ -43,17 +43,17 @@ output "aks_controlplane_identity_id" {
 
 output "subnet_aks_nodes_id" {
   description = "Resource ID of the AKS nodes subnet"
-  value       = var.provision_vnet ? "${module.lz_vending.virtual_network_resource_ids["aks"]}/subnets/${var.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
+  value       = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
 }
 
 output "subnet_aks_apiserver_id" {
   description = "Resource ID of the AKS API server subnet"
-  value       = var.provision_vnet ? "${module.lz_vending.virtual_network_resource_ids["aks"]}/subnets/${var.subnet_aks_apiserver_name}" : azurerm_subnet.aks_apiserver[0].id
+  value       = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_apiserver_name}" : azurerm_subnet.aks_apiserver[0].id
 }
 
 output "vnet_id" {
   description = "Resource ID of the VNet"
-  value       = var.provision_vnet ? module.lz_vending.virtual_network_resource_ids["aks"] : data.azurerm_virtual_network.vnet[0].id
+  value       = local.vnet_id
 }
 
 #########################################################################
@@ -76,17 +76,17 @@ output "resource_group_id" {
 
 output "aks_private_dns_zone_id" {
   description = "Resource ID of the AKS control plane private DNS zone"
-  value       = var.provision_controlplane_dns ? azurerm_private_dns_zone.aks[0].id : data.azurerm_private_dns_zone.aks[0].id
+  value       = local.aks_private_dns_zone_id
 }
 
-output "workload_private_dns_zone_id" {
-  description = "Resource ID of the workload private DNS zone"
-  value       = var.provision_workload_dns ? azurerm_private_dns_zone.workload[0].id : data.azurerm_private_dns_zone.workload[0].id
+output "workload_private_dns_zone_ids" {
+  description = "Map of workload private DNS zone IDs"
+  value       = { for k, v in azurerm_private_dns_zone.workload : k => v.id }
 }
 
-output "public_dns_zone_id" {
-  description = "Resource ID of the public DNS zone"
-  value       = var.provision_public_dns ? azurerm_dns_zone.public[0].id : null
+output "workload_public_dns_zone_ids" {
+  description = "Map of workload public DNS zone IDs"
+  value       = { for k, v in azurerm_dns_zone.public : k => v.id }
 }
 
 #########################################################################
