@@ -173,10 +173,11 @@ module "aks" {
   maintenanceconfiguration = var.aks_maintenance_windows
 
   #---------------------------------------------------------------------------
-  # Ingress Profile
+  # Ingress Profile  
   #---------------------------------------------------------------------------
-  # Explicitly set to null to avoid validation errors in AKS AVM module
-  ingress_profile = null
+  # Set to empty object to work around validation bug in AKS AVM module 0.7.1
+  # The validation fails when null is passed due to coalesce() error
+  ingress_profile = {}
 
   #---------------------------------------------------------------------------
   # Tags
