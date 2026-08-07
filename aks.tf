@@ -173,6 +173,12 @@ module "aks" {
   maintenanceconfiguration = var.aks_maintenance_windows
 
   #---------------------------------------------------------------------------
+  # Ingress Profile
+  #---------------------------------------------------------------------------
+  # Explicitly set to null to avoid validation errors in AKS AVM module
+  ingress_profile = null
+
+  #---------------------------------------------------------------------------
   # Tags
   #---------------------------------------------------------------------------
   tags = local.common_tags
