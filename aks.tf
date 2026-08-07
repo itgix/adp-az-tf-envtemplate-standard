@@ -175,9 +175,20 @@ module "aks" {
   #---------------------------------------------------------------------------
   # Ingress Profile  
   #---------------------------------------------------------------------------
-  # Set to empty object to work around validation bug in AKS AVM module 0.7.1
-  # The validation fails when null is passed due to coalesce() error
-  ingress_profile = {}
+  # Set to Disabled to work around validation bug in AKS AVM module 0.7.1
+  # The validation fails with null or empty values due to coalesce() error
+  ingress_profile = {
+    gateway_api = {
+      installation = "Disabled"
+    }
+    web_app_routing = {
+      gateway_api_implementations = {
+        app_routing_istio = {
+          mode = "Disabled"
+        }
+      }
+    }
+  }
 
   #---------------------------------------------------------------------------
   # Tags
