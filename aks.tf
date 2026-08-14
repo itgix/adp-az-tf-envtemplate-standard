@@ -195,6 +195,13 @@ module "aks" {
   #---------------------------------------------------------------------------
   tags = local.common_tags
 
+  role_assignments = {
+    cluster_admin = {
+      role_definition_id_or_name = "Azure Kubernetes Service RBAC Cluster Admin"
+      principal_id               = data.azurerm_client_config.current.object_id
+    }
+  }
+
   enable_telemetry = false
 
   depends_on = [
