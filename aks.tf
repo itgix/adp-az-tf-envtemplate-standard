@@ -39,12 +39,12 @@ module "aks" {
   # API Server Access - Private Cluster with VNet Integration
   #---------------------------------------------------------------------------
   api_server_access_profile = {
-    enable_private_cluster             = true
+    enable_private_cluster             = var.aks_private_cluster
     enable_vnet_integration            = true
     subnet_id                          = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_apiserver_name}" : azurerm_subnet.aks_apiserver[0].id
-    enable_private_cluster_public_fqdn = false
+    enable_private_cluster_public_fqdn = !var.aks_private_cluster
     disable_run_command                = false
-    private_dns_zone                   = local.aks_private_dns_zone_id
+    private_dns_zone                   = var.aks_private_cluster ? local.aks_private_dns_zone_id : null
   }
 
   #---------------------------------------------------------------------------
