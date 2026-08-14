@@ -14,13 +14,12 @@ module "aks" {
 
   kubernetes_version = var.aks_cluster_version
 
+  node_resource_group = local.aks_node_resource_group_name
+
   #---------------------------------------------------------------------------
   # SKU & Support
   #---------------------------------------------------------------------------
-  sku = {
-    name = "Base"
-    tier = "Free"
-  }
+  sku = var.aks_sku
 
   #---------------------------------------------------------------------------
   # Identity - User Assigned (recommended over system-assigned for AKS)
@@ -32,7 +31,7 @@ module "aks" {
 
   identity_profile = {
     kubeletidentity = {
-      resource_id = var.aks_kubelet_identity_id != "" ? var.aks_kubelet_identity_id : module.lz_vending.umi_resource_ids["aks-kubelet"]
+      resource_id = var.provision_kubelet_identity ? module.lz_vending.umi_resource_ids["aks-kubelet"] : data.azurerm_user_assigned_identity.kubelet[0].id
     }
   }
 
@@ -40,12 +39,12 @@ module "aks" {
   # API Server Access - Private Cluster with VNet Integration
   #---------------------------------------------------------------------------
   api_server_access_profile = {
-    enable_private_cluster             = true
+    enable_private_cluster             = var.aks_private_cluster
     enable_vnet_integration            = true
-    subnet_id                          = var.provision_vnet ? "${module.lz_vending.virtual_network_resource_ids["aks"]}/subnets/${var.subnet_aks_apiserver_name}" : azurerm_subnet.aks_apiserver[0].id
-    enable_private_cluster_public_fqdn = false
+    subnet_id                          = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_apiserver_name}" : azurerm_subnet.aks_apiserver[0].id
+    enable_private_cluster_public_fqdn = !var.aks_private_cluster
     disable_run_command                = false
-    private_dns_zone                   = var.provision_controlplane_dns ? azurerm_private_dns_zone.aks[0].id : data.azurerm_private_dns_zone.aks[0].id
+    private_dns_zone                   = var.aks_private_cluster ? local.aks_private_dns_zone_id : null
   }
 
   #---------------------------------------------------------------------------
@@ -60,14 +59,14 @@ module "aks" {
     dns_service_ip      = "172.16.0.10"
     pod_cidr            = "192.168.0.0/16"
     load_balancer_sku   = "standard"
-    outbound_type       = "loadBalancer"
+    outbound_type       = var.aks_outbound_type
   }
 
   #---------------------------------------------------------------------------
   # Default (System) Node Pool
   #---------------------------------------------------------------------------
   default_agent_pool = merge(var.aks_system_pool, {
-    vnet_subnet_id = var.provision_vnet ? "${module.lz_vending.virtual_network_resource_ids["aks"]}/subnets/${var.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
+    vnet_subnet_id = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
   })
 
   #---------------------------------------------------------------------------
@@ -75,7 +74,7 @@ module "aks" {
   #---------------------------------------------------------------------------
   agent_pools = {
     for k, v in var.aks_worker_pools : k => merge(v, {
-      vnet_subnet_id = var.provision_vnet ? "${module.lz_vending.virtual_network_resource_ids["aks"]}/subnets/${var.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
+      vnet_subnet_id = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
     })
   }
 
@@ -171,32 +170,21 @@ module "aks" {
   #---------------------------------------------------------------------------
   # Maintenance Windows
   #---------------------------------------------------------------------------
-  maintenanceconfiguration = {
-    general = {
-      name = "aksManagedAutoUpgradeSchedule"
-      maintenance_window = {
-        duration_hours = 4
-        start_time     = "03:00"
-        utc_offset     = "+00:00"
-        schedule = {
-          weekly = {
-            day_of_week    = "Sunday"
-            interval_weeks = 1
-          }
-        }
-      }
+  maintenanceconfiguration = var.aks_maintenance_windows
+
+  #---------------------------------------------------------------------------
+  # Ingress Profile  
+  #---------------------------------------------------------------------------
+  # Set to Disabled to work around validation bug in AKS AVM module 0.7.1
+  # The validation fails with null or empty values due to coalesce() error
+  ingress_profile = {
+    gateway_api = {
+      installation = "Disabled"
     }
-    node_os = {
-      name = "aksManagedNodeOSUpgradeSchedule"
-      maintenance_window = {
-        duration_hours = 4
-        start_time     = "03:00"
-        utc_offset     = "+00:00"
-        schedule = {
-          weekly = {
-            day_of_week    = "Sunday"
-            interval_weeks = 1
-          }
+    web_app_routing = {
+      gateway_api_implementations = {
+        app_routing_istio = {
+          mode = "Disabled"
         }
       }
     }
