@@ -104,11 +104,6 @@ variable "aks_private_cluster" {
   default     = true
 }
 
-variable "aks_private_cluster" {
-  description = "Whether to make the AKS cluster private. When false, the API server is publicly accessible."
-  default     = true
-}
-
 variable "aks_admin_group_ids" {
   description = "List of Azure AD group object IDs that will have admin role on the AKS cluster"
   default     = []
