@@ -11,7 +11,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.81.0 |
 
 ## Modules
 
@@ -44,6 +44,7 @@
 | <a name="input_aks_cluster_version"></a> [aks\_cluster\_version](#input\_aks\_cluster\_version) | Desired Kubernetes cluster version | `string` | `"1.36"` | no |
 | <a name="input_aks_maintenance_windows"></a> [aks\_maintenance\_windows](#input\_aks\_maintenance\_windows) | Maintenance window configuration for AKS. Leave empty to disable scheduled maintenance. | <pre>map(object({<br/>    name = string<br/>    maintenance_window = object({<br/>      duration_hours = number<br/>      start_time     = string<br/>      utc_offset     = string<br/>      schedule = object({<br/>        weekly = optional(object({<br/>          day_of_week    = string<br/>          interval_weeks = number<br/>        }))<br/>        daily = optional(object({<br/>          interval_days = number<br/>        }))<br/>      })<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_aks_outbound_type"></a> [aks\_outbound\_type](#input\_aks\_outbound\_type) | The outbound (egress) routing method. Possible values: loadBalancer, userDefinedRouting, managedNATGateway, userAssignedNATGateway. | `string` | `"loadBalancer"` | no |
+| <a name="input_aks_private_cluster"></a> [aks\_private\_cluster](#input\_aks\_private\_cluster) | Whether to make the AKS cluster private. When false, the API server is publicly accessible. | `bool` | `true` | no |
 | <a name="input_aks_prometheus_workspace_id"></a> [aks\_prometheus\_workspace\_id](#input\_aks\_prometheus\_workspace\_id) | Azure Monitor Workspace resource ID for managed Prometheus. Set to null to disable. | `any` | `null` | no |
 | <a name="input_aks_sku"></a> [aks\_sku](#input\_aks\_sku) | The SKU of the AKS cluster. name: Base or Automatic. tier: Free, Standard, or Premium. | `map` | <pre>{<br/>  "name": "Base",<br/>  "tier": "Free"<br/>}</pre> | no |
 | <a name="input_aks_system_pool"></a> [aks\_system\_pool](#input\_aks\_system\_pool) | Configuration for the default system node pool. The vnet\_subnet\_id is injected automatically. | <pre>object({<br/>    name                = string<br/>    vm_size             = string<br/>    os_sku              = string<br/>    availability_zones  = list(string)<br/>    enable_auto_scaling = bool<br/>    min_count           = number<br/>    max_count           = number<br/>    count_of            = number<br/>    os_disk_size_gb     = number<br/>    upgrade_settings = object({<br/>      max_surge = string<br/>    })<br/>  })</pre> | <pre>{<br/>  "availability_zones": [<br/>    "1"<br/>  ],<br/>  "count_of": 1,<br/>  "enable_auto_scaling": true,<br/>  "max_count": 2,<br/>  "min_count": 1,<br/>  "name": "system",<br/>  "os_disk_size_gb": 128,<br/>  "os_sku": "AzureLinux",<br/>  "upgrade_settings": {<br/>    "max_surge": "33%"<br/>  },<br/>  "vm_size": "Standard_B2ms"<br/>}</pre> | no |
