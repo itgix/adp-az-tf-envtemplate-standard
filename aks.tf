@@ -219,16 +219,16 @@ resource "azurerm_federated_identity_credential" "external_dns" {
   name                      = "fc-external-dns"
   user_assigned_identity_id = module.lz_vending.umi_resource_ids["workload-dns"]
   audience                  = ["api://AzureADTokenExchange"]
-  issuer                    = module.aks[0].oidc_issuer_url
+  issuer                    = module.aks[0].oidc_issuer_profile_issuer_url
   subject                   = "system:serviceaccount:external-dns:external-dns-sa"
 }
 
 resource "azurerm_federated_identity_credential" "external_secrets" {
   count = var.provision_aks && var.enable_eso ? 1 : 0
-  
+
   name                      = "fc-external-secrets"
   user_assigned_identity_id = module.lz_vending.umi_resource_ids["workload-eso"]
   audience                  = ["api://AzureADTokenExchange"]
-  issuer                    = module.aks[0].oidc_issuer_url
+  issuer                    = module.aks[0].oidc_issuer_profile_issuer_url
   subject                   = "system:serviceaccount:external-secrets-operator:external-secrets-operator-sa"
 }
