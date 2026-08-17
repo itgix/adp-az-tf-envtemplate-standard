@@ -104,12 +104,12 @@ module "lz_vending" {
         tags               = local.common_tags
         role_assignments = {
           dns_contributor = {
-            definition               = "Private DNS Zone Contributor"
-            resource_group_scope_key = "aks"
+            definition     = "Private DNS Zone Contributor"
+            relative_scope = "/resourceGroups/${local.network_resource_group_name}"
           }
           dns_zone_contributor = {
-            definition               = "DNS Zone Contributor"
-            resource_group_scope_key = "aks"
+            definition     = "DNS Zone Contributor"
+            relative_scope = "/resourceGroups/${local.network_resource_group_name}"
           }
         }
       }
