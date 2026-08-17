@@ -103,8 +103,12 @@ module "lz_vending" {
         location           = var.region
         tags               = local.common_tags
         role_assignments = {
-          dns_contributor = {
+          private_dns_contributor = {
             definition               = "Private DNS Zone Contributor"
+            resource_group_scope_key = "aks"
+          }
+          dns_zone_contributor = {
+            definition               = "DNS Zone Contributor"
             resource_group_scope_key = "aks"
           }
         }
