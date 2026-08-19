@@ -32,17 +32,27 @@ module "postgresql" {
   }
 
   #---------------------------------------------------------------------------
-  # Networking - VNet-integrated (private access) or public
+  # Networking
   #---------------------------------------------------------------------------
   delegated_subnet_id = var.postgresql_private_networking ? (
     var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_postgresql_name}" : azurerm_subnet.postgresql[0].id
   ) : null
 
-  private_dns_zone_id = var.postgresql_private_networking ? (
+  private_dns_zone_id = var.postgresql_private_networking && var.postgresql_manage_dns ? (
     azurerm_private_dns_zone.postgresql[0].id
   ) : null
 
   public_network_access_enabled = !var.postgresql_private_networking
+
+  #---------------------------------------------------------------------------
+  # Private Endpoint (no zone group — DNS handled by Terraform or policy)
+  #---------------------------------------------------------------------------
+  private_endpoints = var.postgresql_private_networking ? {
+    primary = {
+      name               = "pe-psql-${var.project_name}-${var.environment}-${var.region}"
+      subnet_resource_id = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
+    }
+  } : {}
 
   #---------------------------------------------------------------------------
   # High Availability
@@ -65,9 +75,9 @@ module "postgresql" {
   databases = var.postgresql_databases
 
   #---------------------------------------------------------------------------
-  # Firewall Rules (public access mode)
+  # Firewall Rules (public mode only)
   #---------------------------------------------------------------------------
-  firewall_rules = var.postgresql_private_networking ? {} : var.postgresql_firewall_rules
+  firewall_rules = !var.postgresql_private_networking ? var.postgresql_firewall_rules : {}
 
   #---------------------------------------------------------------------------
   # Tags
@@ -83,7 +93,7 @@ module "postgresql" {
 }
 
 #########################################################################
-##  PostgreSQL Subnet (when provision_vnet = false + private networking)##
+##  PostgreSQL Delegated Subnet (existing VNet, provision_vnet = false) ##
 #########################################################################
 
 resource "azurerm_subnet" "postgresql" {
@@ -104,11 +114,12 @@ resource "azurerm_subnet" "postgresql" {
 }
 
 #########################################################################
-##  PostgreSQL Private DNS Zone                                        ##
+##  PostgreSQL Private DNS Zone + VNet Link + A Record                 ##
+##  Only when NOT landing zone (dns_zone_group = true)                 ##
 #########################################################################
 
 resource "azurerm_private_dns_zone" "postgresql" {
-  count = var.provision_postgresql && var.postgresql_private_networking ? 1 : 0
+  count = var.provision_postgresql && var.postgresql_private_networking && var.postgresql_manage_dns ? 1 : 0
 
   name                = "${var.project_name}.postgres.database.azure.com"
   resource_group_name = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
@@ -118,10 +129,29 @@ resource "azurerm_private_dns_zone" "postgresql" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgresql" {
-  count = var.provision_postgresql && var.postgresql_private_networking ? 1 : 0
+  count = var.provision_postgresql && var.postgresql_private_networking && var.postgresql_manage_dns ? 1 : 0
 
   name                  = "link-psql-${var.environment}-${var.region}"
   resource_group_name   = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.postgresql[0].name
   virtual_network_id    = local.vnet_id
+}
+
+data "azurerm_private_endpoint_connection" "postgresql" {
+  count = var.provision_postgresql && var.postgresql_private_networking && var.postgresql_manage_dns ? 1 : 0
+
+  name                = "pe-psql-${var.project_name}-${var.environment}-${var.region}"
+  resource_group_name = local.resource_group_name
+
+  depends_on = [module.postgresql]
+}
+
+resource "azurerm_private_dns_a_record" "postgresql" {
+  count = var.provision_postgresql && var.postgresql_private_networking && var.postgresql_manage_dns ? 1 : 0
+
+  name                = "psql-${var.project_name}-${var.environment}-${var.region}"
+  zone_name           = azurerm_private_dns_zone.postgresql[0].name
+  resource_group_name = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
+  ttl                 = 300
+  records             = [data.azurerm_private_endpoint_connection.postgresql[0].private_service_connection[0].private_ip_address]
 }

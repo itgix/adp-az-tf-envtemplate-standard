@@ -231,7 +231,12 @@ variable "postgresql_storage_tier" {
 }
 
 variable "postgresql_private_networking" {
-  description = "Whether to deploy PostgreSQL with VNet integration (private access). When false, public access with firewall rules."
+  description = "Whether to deploy PostgreSQL with private networking (delegated subnet + private DNS zone + private endpoint). When false, public access with firewall rules."
+  default     = true
+}
+
+variable "postgresql_manage_dns" {
+  description = "Whether Terraform creates the private DNS zone and A record. Set to false when a landing zone policy manages DNS."
   default     = true
 }
 
@@ -272,7 +277,7 @@ variable "postgresql_databases" {
 }
 
 variable "postgresql_firewall_rules" {
-  description = "Map of firewall rules for public access mode. Each rule needs name, start_ip_address and end_ip_address."
+  description = "Map of firewall rules for public mode. Each rule needs name, start_ip_address and end_ip_address."
   default = {
     allow_azure_services = {
       name             = "AllowAzureServices"
