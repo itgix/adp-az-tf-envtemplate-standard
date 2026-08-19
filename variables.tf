@@ -202,6 +202,87 @@ variable "aks_maintenance_windows" {
 }
 
 #########################################################################
+##                   PostgreSQL Variables                              ##
+#########################################################################
+
+variable "provision_postgresql" {
+  description = "Whether to provision an Azure Database for PostgreSQL Flexible Server"
+  default     = false
+}
+
+variable "postgresql_version" {
+  description = "PostgreSQL major version (13, 14, 15, 16, 17)"
+  default     = "16"
+}
+
+variable "postgresql_sku_name" {
+  description = "The SKU name for the PostgreSQL Flexible Server (e.g. B_Standard_B1ms, GP_Standard_D2s_v3, MO_Standard_E4s_v3)"
+  default     = "B_Standard_B1ms"
+}
+
+variable "postgresql_storage_mb" {
+  description = "Storage size in MB (32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4193280, 8388608, 16777216)"
+  default     = 32768
+}
+
+variable "postgresql_storage_tier" {
+  description = "Storage tier (P4, P6, P10, P15, P20, P30, P40, P50, P60, P70, P80)"
+  default     = "P4"
+}
+
+variable "postgresql_private_networking" {
+  description = "Whether to deploy PostgreSQL with VNet integration (private access). When false, public access with firewall rules."
+  default     = true
+}
+
+variable "subnet_postgresql_cidr" {
+  description = "CIDR for the PostgreSQL delegated subnet"
+  default     = "10.0.5.0/24"
+}
+
+variable "postgresql_high_availability" {
+  description = "Whether to enable zone-redundant high availability"
+  default     = false
+}
+
+variable "postgresql_zone" {
+  description = "Availability zone for the primary PostgreSQL server"
+  default     = "1"
+}
+
+variable "postgresql_backup_retention_days" {
+  description = "Backup retention period in days (7-35)"
+  default     = 7
+}
+
+variable "postgresql_geo_redundant_backup" {
+  description = "Whether geo-redundant backup is enabled"
+  default     = false
+}
+
+variable "postgresql_databases" {
+  description = "Map of databases to create on the server"
+  default = {
+    backstage = {
+      name      = "backstage"
+      charset   = "UTF8"
+      collation = "en_US.utf8"
+    }
+  }
+}
+
+variable "postgresql_firewall_rules" {
+  description = "Map of firewall rules for public access mode. Each rule needs name, start_ip_address and end_ip_address."
+  default = {
+    allow_azure_services = {
+      name             = "AllowAzureServices"
+      start_ip_address = "0.0.0.0"
+      end_ip_address   = "0.0.0.0"
+    }
+  }
+}
+
+#########################################################################
 ##                   Identity / RBAC Variables                         ##
 #########################################################################
 
