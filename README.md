@@ -11,7 +11,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.81.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.0 |
 
 ## Modules
 
@@ -25,12 +25,16 @@
 | Name | Type |
 |------|------|
 | [azurerm_dns_zone.public](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_zone) | resource |
+| [azurerm_federated_identity_credential.external_dns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
+| [azurerm_federated_identity_credential.external_secrets](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
+| [azurerm_federated_identity_credential.loki](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
 | [azurerm_private_dns_zone.aks](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
 | [azurerm_private_dns_zone.workload](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
 | [azurerm_private_dns_zone_virtual_network_link.aks](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
 | [azurerm_private_dns_zone_virtual_network_link.workload](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
 | [azurerm_subnet.aks_apiserver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) | resource |
 | [azurerm_subnet.aks_nodes](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 | [azurerm_key_vault.eso](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
 | [azurerm_private_dns_zone.aks](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/private_dns_zone) | data source |
 | [azurerm_user_assigned_identity.kubelet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
@@ -53,6 +57,7 @@
 | <a name="input_budget_enabled"></a> [budget\_enabled](#input\_budget\_enabled) | Whether to create subscription budgets | `bool` | `false` | no |
 | <a name="input_budgets"></a> [budgets](#input\_budgets) | Map of budget configurations. See lz-vending module docs for schema. | `map` | `{}` | no |
 | <a name="input_enable_eso"></a> [enable\_eso](#input\_enable\_eso) | Whether to enable External Secrets Operator integration. When true, looks up existing Key Vault via data and assigns role. | `bool` | `true` | no |
+| <a name="input_enable_loki"></a> [enable\_loki](#input\_enable\_loki) | Whether to enable Loki integration. When true, creates workload identity and assigns Storage Blob Data Contributor role. | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment in which the infrastructure is going to be deployed | `string` | `"dev"` | no |
 | <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Name of the project / client / product to be used in naming convention | `string` | `"contoso"` | no |
 | <a name="input_provision_aks"></a> [provision\_aks](#input\_provision\_aks) | Whether to provision the AKS cluster | `bool` | `true` | no |
@@ -88,6 +93,7 @@
 | <a name="output_vnet_id"></a> [vnet\_id](#output\_vnet\_id) | Resource ID of the VNet |
 | <a name="output_workload_dns_identity_client_id"></a> [workload\_dns\_identity\_client\_id](#output\_workload\_dns\_identity\_client\_id) | Client ID of the external-dns workload identity |
 | <a name="output_workload_eso_identity_client_id"></a> [workload\_eso\_identity\_client\_id](#output\_workload\_eso\_identity\_client\_id) | Client ID of the ESO workload identity |
+| <a name="output_workload_loki_identity_client_id"></a> [workload\_loki\_identity\_client\_id](#output\_workload\_loki\_identity\_client\_id) | Client ID of the Loki workload identity |
 | <a name="output_workload_private_dns_zone_ids"></a> [workload\_private\_dns\_zone\_ids](#output\_workload\_private\_dns\_zone\_ids) | Map of workload private DNS zone IDs |
 | <a name="output_workload_public_dns_zone_ids"></a> [workload\_public\_dns\_zone\_ids](#output\_workload\_public\_dns\_zone\_ids) | Map of workload public DNS zone IDs |
 <!-- END_TF_DOCS -->

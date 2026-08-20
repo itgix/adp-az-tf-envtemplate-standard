@@ -103,6 +103,11 @@ output "workload_eso_identity_client_id" {
   value       = module.lz_vending.umi_client_ids["workload-eso"]
 }
 
+output "workload_loki_identity_client_id" {
+  description = "Client ID of the Loki workload identity"
+  value       = var.enable_loki ? module.lz_vending.umi_client_ids["workload-loki"] : null
+}
+  
 #########################################################################
 ##  PostgreSQL
 #########################################################################
