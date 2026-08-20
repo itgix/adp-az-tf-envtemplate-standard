@@ -121,3 +121,22 @@ output "postgresql_server_fqdn" {
   description = "FQDN of the PostgreSQL Flexible Server"
   value       = var.provision_postgresql ? module.postgresql[0].fqdn : null
 }
+
+#########################################################################
+##  CosmosDB
+#########################################################################
+
+output "cosmosdb_account_id" {
+  description = "Resource ID of the CosmosDB account"
+  value       = var.provision_cosmosdb ? module.cosmosdb[0].resource_id : null
+}
+
+output "cosmosdb_account_name" {
+  description = "Name of the CosmosDB account"
+  value       = var.provision_cosmosdb ? module.cosmosdb[0].name : null
+}
+
+output "cosmosdb_endpoint" {
+  description = "Endpoint of the CosmosDB account"
+  value       = var.provision_cosmosdb ? module.cosmosdb[0].endpoint : null
+}

@@ -288,6 +288,102 @@ variable "postgresql_firewall_rules" {
 }
 
 #########################################################################
+##                   CosmosDB Variables                                ##
+#########################################################################
+
+variable "provision_cosmosdb" {
+  description = "Whether to provision an Azure CosmosDB account"
+  default     = false
+}
+
+variable "cosmosdb_private_networking" {
+  description = "Whether to deploy CosmosDB with private endpoint. When false, public access with IP filtering."
+  default     = true
+}
+
+variable "cosmosdb_manage_dns" {
+  description = "Whether Terraform creates the private DNS zone and A record. Set to false when a landing zone policy manages DNS."
+  default     = true
+}
+
+variable "cosmosdb_subresource_name" {
+  description = "The private endpoint subresource. Possible values: SQL, SqlDedicated, Cassandra, MongoDB, Gremlin, Table."
+  default     = "SQL"
+}
+
+variable "cosmosdb_capabilities" {
+  description = "Set of capabilities to enable on the CosmosDB account (e.g. EnableServerless, EnableCassandra, EnableMongo, EnableTable, EnableGremlin)"
+  default     = []
+}
+
+variable "cosmosdb_consistency_policy" {
+  description = "Consistency policy for the CosmosDB account"
+  default = {
+    consistency_level = "Session"
+  }
+}
+
+variable "cosmosdb_backup" {
+  description = "Backup configuration for the CosmosDB account"
+  default = {
+    type = "Continuous"
+    tier = "Continuous30Days"
+  }
+}
+
+variable "cosmosdb_geo_locations" {
+  description = "Geo-replication locations. Defaults to the deployment region with no zone redundancy."
+  default     = null
+}
+
+variable "cosmosdb_capacity" {
+  description = "Throughput capacity limit configuration"
+  default = {
+    total_throughput_limit = -1
+  }
+}
+
+variable "cosmosdb_sql_databases" {
+  description = "Map of SQL databases and containers to create"
+  default     = {}
+}
+
+variable "cosmosdb_mongo_databases" {
+  description = "Map of MongoDB databases and collections to create"
+  default     = {}
+}
+
+variable "cosmosdb_mongo_server_version" {
+  description = "MongoDB server version (3.2, 3.6, 4.0, 4.2, 5.0, 6.0, 7.0)"
+  default     = "4.2"
+}
+
+variable "cosmosdb_disable_local_auth" {
+  description = "Disable local authentication, enforcing AAD-only access (SQL API only)"
+  default     = true
+}
+
+variable "cosmosdb_free_tier" {
+  description = "Whether to enable the free tier (one per subscription)"
+  default     = false
+}
+
+variable "cosmosdb_automatic_failover" {
+  description = "Whether automatic failover is enabled"
+  default     = true
+}
+
+variable "cosmosdb_multi_region_write" {
+  description = "Whether multi-region writes are enabled"
+  default     = false
+}
+
+variable "cosmosdb_ip_range_filter" {
+  description = "Set of IP addresses/CIDR ranges allowed when public access is enabled"
+  default     = []
+}
+
+#########################################################################
 ##                   Identity / RBAC Variables                         ##
 #########################################################################
 
