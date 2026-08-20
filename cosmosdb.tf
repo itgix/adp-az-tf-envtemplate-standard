@@ -74,7 +74,7 @@ module "cosmosdb" {
   #---------------------------------------------------------------------------
   # Mongo Databases
   #---------------------------------------------------------------------------
-  mongo_databases    = var.cosmosdb_mongo_databases
+  mongo_databases      = var.cosmosdb_mongo_databases
   mongo_server_version = var.cosmosdb_mongo_server_version
 
   #---------------------------------------------------------------------------
@@ -85,8 +85,8 @@ module "cosmosdb" {
   #---------------------------------------------------------------------------
   # Other
   #---------------------------------------------------------------------------
-  free_tier_enabled              = var.cosmosdb_free_tier
-  automatic_failover_enabled     = var.cosmosdb_automatic_failover
+  free_tier_enabled               = var.cosmosdb_free_tier
+  automatic_failover_enabled      = var.cosmosdb_automatic_failover
   multiple_write_locations_enabled = var.cosmosdb_multi_region_write
 
   #---------------------------------------------------------------------------
@@ -123,15 +123,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "cosmosdb" {
   virtual_network_id    = local.vnet_id
 }
 
-data "azurerm_private_endpoint_connection" "cosmosdb" {
-  count = var.provision_cosmosdb && var.cosmosdb_private_networking && var.cosmosdb_manage_dns ? 1 : 0
-
-  name                = "pe-cosmos-${var.project_name}-${var.environment}-${var.region}"
-  resource_group_name = local.resource_group_name
-
-  depends_on = [module.cosmosdb]
-}
-
 resource "azurerm_private_dns_a_record" "cosmosdb" {
   count = var.provision_cosmosdb && var.cosmosdb_private_networking && var.cosmosdb_manage_dns ? 1 : 0
 
@@ -139,5 +130,5 @@ resource "azurerm_private_dns_a_record" "cosmosdb" {
   zone_name           = azurerm_private_dns_zone.cosmosdb[0].name
   resource_group_name = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
   ttl                 = 300
-  records             = [data.azurerm_private_endpoint_connection.cosmosdb[0].private_service_connection[0].private_ip_address]
+  records             = [module.cosmosdb[0].resource_private_endpoints["primary"].private_service_connection[0].private_ip_address]
 }

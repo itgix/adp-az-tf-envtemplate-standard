@@ -137,15 +137,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgresql" {
   virtual_network_id    = local.vnet_id
 }
 
-data "azurerm_private_endpoint_connection" "postgresql" {
-  count = var.provision_postgresql && var.postgresql_private_networking && var.postgresql_manage_dns ? 1 : 0
-
-  name                = "pe-psql-${var.project_name}-${var.environment}-${var.region}"
-  resource_group_name = local.resource_group_name
-
-  depends_on = [module.postgresql]
-}
-
 resource "azurerm_private_dns_a_record" "postgresql" {
   count = var.provision_postgresql && var.postgresql_private_networking && var.postgresql_manage_dns ? 1 : 0
 
@@ -153,5 +144,5 @@ resource "azurerm_private_dns_a_record" "postgresql" {
   zone_name           = azurerm_private_dns_zone.postgresql[0].name
   resource_group_name = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
   ttl                 = 300
-  records             = [data.azurerm_private_endpoint_connection.postgresql[0].private_service_connection[0].private_ip_address]
+  records             = [module.postgresql[0].private_endpoints["primary"].private_service_connection[0].private_ip_address]
 }
