@@ -50,7 +50,7 @@ module "cosmosdb" {
 
   private_endpoints = var.cosmosdb_private_networking ? {
     primary = {
-      name               = "pe-cosmos-${var.project_name}-${var.environment}-${var.region}"
+      name               = local.pe_cosmosdb_name
       subnet_resource_id = var.provision_vnet ? "${local.vnet_id}/subnets/${local.subnet_aks_nodes_name}" : azurerm_subnet.aks_nodes[0].id
       subresource_name   = var.cosmosdb_subresource_name
     }
@@ -130,5 +130,5 @@ resource "azurerm_private_dns_a_record" "cosmosdb" {
   zone_name           = azurerm_private_dns_zone.cosmosdb[0].name
   resource_group_name = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
   ttl                 = 300
-  records             = [module.cosmosdb[0].resource_private_endpoints["primary"].private_service_connection[0].private_ip_address]
+  records             = [module.cosmosdb[0].resource_private_endpoints[local.pe_cosmosdb_name].private_service_connection[0].private_ip_address]
 }

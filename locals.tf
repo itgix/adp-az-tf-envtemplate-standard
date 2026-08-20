@@ -15,6 +15,10 @@ locals {
   subnet_aks_apiserver_name = "snet-aks-apiserver-${var.environment}-${var.region}"
   subnet_postgresql_name    = "snet-psql-${var.environment}-${var.region}"
 
+  # Private Endpoint names
+  pe_postgresql_name = "pe-psql-${var.project_name}-${var.environment}-${var.region}"
+  pe_cosmosdb_name   = "pe-cosmos-${var.project_name}-${var.environment}-${var.region}"
+
   common_tags = {
     environment = var.environment
     project     = var.project_name
