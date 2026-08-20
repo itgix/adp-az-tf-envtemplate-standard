@@ -210,6 +210,11 @@ variable "enable_eso" {
   default     = true
 }
 
+variable "enable_loki" {
+  description = "Whether to enable Loki integration. When true, creates workload identity and assigns Storage Blob Data Contributor role."
+  default     = false
+}
+
 #########################################################################
 ##                   Budget Variables                                  ##
 #########################################################################

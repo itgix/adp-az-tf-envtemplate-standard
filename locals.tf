@@ -3,6 +3,7 @@ locals {
   network_resource_group_name  = "rg-network-${var.environment}-${var.region}"
   managed_resource_group_name  = "rg-managed-${var.environment}-${var.region}"
   aks_node_resource_group_name = "rg-aks-nodes-${var.environment}-${var.region}"
+  storage_account_name         = "st${var.project_name}${var.environment}${var.region_short}"
 
   # Control plane DNS zone ID
   aks_private_dns_zone_id = var.provision_controlplane_dns ? azurerm_private_dns_zone.aks[0].id : data.azurerm_private_dns_zone.aks[0].id
