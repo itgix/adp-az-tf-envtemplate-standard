@@ -123,6 +123,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "cosmosdb" {
   virtual_network_id    = local.vnet_id
 }
 
+data "azurerm_private_endpoint_connection" "cosmosdb" {
+  count = var.provision_cosmosdb && var.cosmosdb_private_networking && var.cosmosdb_manage_dns ? 1 : 0
+
+  name                = local.pe_cosmosdb_name
+  resource_group_name = local.resource_group_name
+
+  depends_on = [module.cosmosdb]
+}
+
 resource "azurerm_private_dns_a_record" "cosmosdb" {
   count = var.provision_cosmosdb && var.cosmosdb_private_networking && var.cosmosdb_manage_dns ? 1 : 0
 
@@ -130,5 +139,5 @@ resource "azurerm_private_dns_a_record" "cosmosdb" {
   zone_name           = azurerm_private_dns_zone.cosmosdb[0].name
   resource_group_name = var.provision_vnet ? local.resource_group_name : local.network_resource_group_name
   ttl                 = 300
-  records             = [module.cosmosdb[0].resource_private_endpoints[local.pe_cosmosdb_name].private_service_connection[0].private_ip_address]
+  records             = [data.azurerm_private_endpoint_connection.cosmosdb[0].private_service_connection[0].private_ip_address]
 }
