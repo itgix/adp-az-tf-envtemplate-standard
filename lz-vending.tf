@@ -125,6 +125,18 @@ module "lz_vending" {
           }
         } : {}
       }
+      workload-loki = {
+        name               = "id-workload-loki-${var.environment}-${var.region}"
+        resource_group_key = "aks"
+        location           = var.region
+        tags               = local.common_tags
+        role_assignments = var.enable_loki ? {
+          storage_blob_contributor = {
+            definition     = "Storage Blob Data Contributor"
+            relative_scope = "/resourceGroups/${local.managed_resource_group_name}/providers/Microsoft.Storage/storageAccounts/${local.storage_account_name}"
+          }
+        } : {}
+      }
     }
   )
 

@@ -232,3 +232,13 @@ resource "azurerm_federated_identity_credential" "external_secrets" {
   issuer                    = module.aks[0].oidc_issuer_profile_issuer_url
   subject                   = "system:serviceaccount:external-secrets-operator:external-secrets-operator-sa"
 }
+
+resource "azurerm_federated_identity_credential" "loki" {
+  count = var.provision_aks && var.enable_loki ? 1 : 0
+
+  name                      = "fc-loki"
+  user_assigned_identity_id = module.lz_vending.umi_resource_ids["workload-loki"]
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = module.aks[0].oidc_issuer_profile_issuer_url
+  subject                   = "system:serviceaccount:monitoring:loki-sa"
+}
