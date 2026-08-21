@@ -202,6 +202,188 @@ variable "aks_maintenance_windows" {
 }
 
 #########################################################################
+##                   PostgreSQL Variables                              ##
+#########################################################################
+
+variable "provision_postgresql" {
+  description = "Whether to provision an Azure Database for PostgreSQL Flexible Server"
+  default     = false
+}
+
+variable "postgresql_version" {
+  description = "PostgreSQL major version (13, 14, 15, 16, 17)"
+  default     = "16"
+}
+
+variable "postgresql_sku_name" {
+  description = "The SKU name for the PostgreSQL Flexible Server (e.g. B_Standard_B1ms, GP_Standard_D2s_v3, MO_Standard_E4s_v3)"
+  default     = "B_Standard_B1ms"
+}
+
+variable "postgresql_storage_mb" {
+  description = "Storage size in MB (32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4193280, 8388608, 16777216)"
+  default     = 32768
+}
+
+variable "postgresql_storage_tier" {
+  description = "Storage tier (P4, P6, P10, P15, P20, P30, P40, P50, P60, P70, P80)"
+  default     = "P4"
+}
+
+variable "postgresql_private_networking" {
+  description = "Whether to deploy PostgreSQL with private networking (delegated subnet + private DNS zone + private endpoint). When false, public access with firewall rules."
+  default     = true
+}
+
+variable "postgresql_manage_dns" {
+  description = "Whether Terraform creates the private DNS zone and A record. Set to false when a landing zone policy manages DNS."
+  default     = true
+}
+
+variable "subnet_postgresql_cidr" {
+  description = "CIDR for the PostgreSQL delegated subnet"
+  default     = "10.0.5.0/24"
+}
+
+variable "postgresql_high_availability" {
+  description = "Whether to enable zone-redundant high availability"
+  default     = false
+}
+
+variable "postgresql_zone" {
+  description = "Availability zone for the primary PostgreSQL server"
+  default     = "1"
+}
+
+variable "postgresql_backup_retention_days" {
+  description = "Backup retention period in days (7-35)"
+  default     = 7
+}
+
+variable "postgresql_geo_redundant_backup" {
+  description = "Whether geo-redundant backup is enabled"
+  default     = false
+}
+
+variable "postgresql_databases" {
+  description = "Map of databases to create on the server"
+  default = {
+    backstage = {
+      name      = "backstage"
+      charset   = "UTF8"
+      collation = "en_US.utf8"
+    }
+  }
+}
+
+variable "postgresql_firewall_rules" {
+  description = "Map of firewall rules for public mode. Each rule needs name, start_ip_address and end_ip_address."
+  default = {
+    allow_azure_services = {
+      name             = "AllowAzureServices"
+      start_ip_address = "0.0.0.0"
+      end_ip_address   = "0.0.0.0"
+    }
+  }
+}
+
+#########################################################################
+##                   CosmosDB Variables                                ##
+#########################################################################
+
+variable "provision_cosmosdb" {
+  description = "Whether to provision an Azure CosmosDB account"
+  default     = false
+}
+
+variable "cosmosdb_private_networking" {
+  description = "Whether to deploy CosmosDB with private endpoint. When false, public access with IP filtering."
+  default     = true
+}
+
+variable "cosmosdb_manage_dns" {
+  description = "Whether Terraform creates the private DNS zone and A record. Set to false when a landing zone policy manages DNS."
+  default     = true
+}
+
+variable "cosmosdb_subresource_name" {
+  description = "The private endpoint subresource. Possible values: SQL, SqlDedicated, Cassandra, MongoDB, Gremlin, Table."
+  default     = "SQL"
+}
+
+variable "cosmosdb_capabilities" {
+  description = "Set of capabilities to enable on the CosmosDB account (e.g. EnableServerless, EnableCassandra, EnableMongo, EnableTable, EnableGremlin)"
+  default     = []
+}
+
+variable "cosmosdb_consistency_policy" {
+  description = "Consistency policy for the CosmosDB account"
+  default = {
+    consistency_level = "Session"
+  }
+}
+
+variable "cosmosdb_backup" {
+  description = "Backup configuration for the CosmosDB account"
+  default = {
+    type = "Continuous"
+    tier = "Continuous30Days"
+  }
+}
+
+variable "cosmosdb_geo_locations" {
+  description = "Geo-replication locations. Defaults to the deployment region with no zone redundancy."
+  default     = null
+}
+
+variable "cosmosdb_capacity" {
+  description = "Throughput capacity limit configuration"
+  default = {
+    total_throughput_limit = -1
+  }
+}
+
+variable "cosmosdb_sql_databases" {
+  description = "Map of SQL databases and containers to create"
+  default     = {}
+}
+
+variable "cosmosdb_mongo_databases" {
+  description = "Map of MongoDB databases and collections to create"
+  default     = {}
+}
+
+variable "cosmosdb_mongo_server_version" {
+  description = "MongoDB server version (3.2, 3.6, 4.0, 4.2, 5.0, 6.0, 7.0)"
+  default     = "4.2"
+}
+
+variable "cosmosdb_disable_local_auth" {
+  description = "Disable local authentication, enforcing AAD-only access (SQL API only)"
+  default     = true
+}
+
+variable "cosmosdb_free_tier" {
+  description = "Whether to enable the free tier (one per subscription)"
+  default     = false
+}
+
+variable "cosmosdb_automatic_failover" {
+  description = "Whether automatic failover is enabled"
+  default     = true
+}
+
+variable "cosmosdb_multi_region_write" {
+  description = "Whether multi-region writes are enabled"
+  default     = false
+}
+
+variable "cosmosdb_ip_range_filter" {
+  description = "Set of IP addresses/CIDR ranges allowed when public access is enabled"
+  default     = []
+}
+
+#########################################################################
 ##                   Identity / RBAC Variables                         ##
 #########################################################################
 

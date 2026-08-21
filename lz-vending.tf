@@ -38,24 +38,39 @@ module "lz_vending" {
       dns_servers        = var.vnet_dns_servers
       tags               = local.common_tags
 
-      subnets = {
-        aks-nodes = {
-          name                            = local.subnet_aks_nodes_name
-          address_prefixes                = [var.subnet_aks_nodes_cidr]
-          default_outbound_access_enabled = false
-        }
-        aks-apiserver = {
-          name                            = local.subnet_aks_apiserver_name
-          address_prefixes                = [var.subnet_aks_apiserver_cidr]
-          default_outbound_access_enabled = false
-          delegations = [{
-            name = "aks-delegation"
-            service_delegation = {
-              name = "Microsoft.ContainerService/managedClusters"
-            }
-          }]
-        }
-      }
+      subnets = merge(
+        {
+          aks-nodes = {
+            name                            = local.subnet_aks_nodes_name
+            address_prefixes                = [var.subnet_aks_nodes_cidr]
+            default_outbound_access_enabled = false
+          }
+          aks-apiserver = {
+            name                            = local.subnet_aks_apiserver_name
+            address_prefixes                = [var.subnet_aks_apiserver_cidr]
+            default_outbound_access_enabled = false
+            delegations = [{
+              name = "aks-delegation"
+              service_delegation = {
+                name = "Microsoft.ContainerService/managedClusters"
+              }
+            }]
+          }
+        },
+        var.provision_postgresql && var.postgresql_private_networking ? {
+          postgresql = {
+            name                            = local.subnet_postgresql_name
+            address_prefixes                = [var.subnet_postgresql_cidr]
+            default_outbound_access_enabled = false
+            delegations = [{
+              name = "postgresql-delegation"
+              service_delegation = {
+                name = "Microsoft.DBforPostgreSQL/flexibleServers"
+              }
+            }]
+          }
+        } : {}
+      )
     }
   } : {}
 
